@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="it_registry_tree_action" model="ir.actions.act_window">
+        <field name="name">Registro de Recursos de TI</field>
+        <field name="res_model">it.resource.registry</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Gerencie os registros dos recursos de TI aqui.
+            </p>
+        </field>
+    </record>
+
+    <record id="it_registry_tree_view" model="ir.ui.view">
+        <field name="name">it.resource.registry.tree</field>
+        <field name="model">it.resource.registry</field>
+        <field name="arch" type="xml">
+            <tree string="Solicitações de Equipamentos">
+                <field name="name"/>
+                <field name="resource_item_id"/>
+                <field name="assigned_to"/>
+                <field name="status"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="it_registry_form_view" model='ir.ui.view'>
+        <field name="name">it.resource.registry.form</field>
+        <field name="model">it.resource.registry</field>
+        <field name="arch" type="xml">
+            <form string="Registro de Solicitação de Equipamento">
+                <sheet>
+                    <group string="Funcionário e Recurso">
+                        <field name="name"/>
+                        <field name="resource_item_id"/>
+                        <field name="assigned_to"/>
+                    </group>
+                    <group string="Detalhes da Solicitação">
+                        <field name="status"/>
+                        <field name="allocation_date"/>
+                        <field name="return_date"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

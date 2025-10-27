@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # Odoo Application Service
+  odoo:
+    image: odoo:14.0
+    container_name: odoo14_web
+    depends_on:
+      - db
+    ports:
+      - "8069:8069" # Maps your PC's port 8069 to the container's port 8069
+    volumes:
+      - ./config:/etc/odoo                      # Mounts your config file
+      - ./addons:/mnt/extra-addons            # Mounts your custom addons
+      - odoo-data:/var/lib/odoo               # Creates a volume for Odoo data (filestore)
+    environment:
+      - HOST=db
+      - USER=odoo
+      - PASSWORD=my_odoo_password             # Must match db_password in odoo.conf
+    tty: true
+
+  # PostgreSQL Database Service
+  db:
+    image: postgres:13
+    container_name: odoo14_db
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=my_odoo_password    # Must match the password for the odoo service
+    volumes:
+      - postgres-data:/var/lib/postgresql/data # Creates a volume for persistent DB data
+    
+# Defines the named volumes for data persistence
+volumes:
+  odoo-data:
+  postgres-data:

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="hr_employee_form_view_inherit_it_resources" model="ir.ui.view">
+        <field name="name">hr.employee.form.inherit.it_resources</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Registros de Recursos de TI" name="it_resources_page">
+                    <field name="it_resource_registry_ids">
+                        <tree string="Solicitações Equipamentos">
+                            <field name="name"/>
+                            <field name="resource_item_id"/>
+                            <field name="status"/>
+                            <field name="allocation_date"/>
+                            <field name="return_date"/>
+                        </tree>
+                        <form string="Registro de Solicitação de Equipamento">
+                             <group>
+                                <field name="name"/>
+                                <field name="resource_item_id"/>
+                                <field name="status"/>
+                                <field name="allocation_date"/>
+                                <field name="return_date"/>
+                            </group>
+                        </form>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

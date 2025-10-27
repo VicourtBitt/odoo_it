@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="it_resource_item_tree_action" model="ir.actions.act_window">
+        <field name="name">Itens de Recursos de TI</field>
+        <field name="res_model">it.resource.item</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Gerencie os itens de recursos de TI aqui.
+            </p>
+        </field>
+    </record>
+
+    <record id="it_resource_item_tree_view" model="ir.ui.view">
+        <field name="name">it.resource.item.tree</field>
+        <field name="model">it.resource.item</field>
+        <field name="arch" type="xml">
+            <tree string="Itens de Recursos de TI">
+                <field name="name"/>
+                <field name="category"/>
+                <field name="revision_frequency"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="it_resource_item_history_form_view" model='ir.ui.view'>
+        <field name="name">it.resource.item.form</field>
+        <field name="model">it.resource.item</field>
+        <field name="arch" type="xml">
+            <form string="Item de Recurso de TI">
+                <sheet>
+                    <group string="Detalhes do Recurso">
+                        <field name="name"/>
+                        <field name="description"/>
+                        <field name="category"/>
+                        <field name="revision_frequency"/>
+                    </group>
+                    <notebook>
+                        <page string="Histórico de Alocações">
+                            <field name="registry_ids">
+                                <tree>
+                                    <field name="assigned_to"/>
+                                    <field name="allocation_date"/>
+                                    <field name="return_date"/>
+                                    <field name="status"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

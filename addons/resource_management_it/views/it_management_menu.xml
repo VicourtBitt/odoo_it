@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <menuitem 
+        id="it_management_menu" 
+        name="Gestão de Equipamentos" 
+        sequence="10"
+    />
+        <menuitem 
+            id="it_registry_menu" 
+            name="Registros" 
+            parent="it_management_menu" 
+            action="it_registry_tree_action" 
+            sequence="10"
+        />
+        <menuitem 
+            id="it_resource_items_menu" 
+            name="Itens de Recursos" 
+            parent="it_management_menu" 
+            action="it_resource_item_tree_action" 
+            sequence="20"
+        />
+</odoo>
