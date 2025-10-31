@@ -1,0 +1,186 @@
+Claro! Entendido. Você quer um fluxo de desenvolvimento completo no Odoo 14 para adicionar um botão em uma linha de uma tree view que abre um wizard (pop-up) e, ao confirmar nesse wizard, os dados são salvos em um novo modelo.
+Vamos quebrar isso em partes.
+🐧 Conceitos-Chave para Aprender
+Antes do código, vamos solidificar os conceitos que você perguntou:
+ * Wizards (Assistentes):
+   * No Odoo, um wizard não é um tipo especial de "coisa". Ele é apenas um modelo normal que herda de models.TransientModel em vez de models.Model.
+   * A única diferença é que o Odoo limpa (apaga) os registros de TransientModel periodicamente.
+   * Eles são perfeitos para coletar informações temporárias do usuário (como em um pop-up) antes de realizar uma ação.
+   * Você cria views de formulário (<form>) para eles, assim como qualquer outro modelo.
+ * Métodos Auxiliares (Ações de Botão):
+   * Qualquer método Python que você define em seu modelo pode ser chamado por um botão na view XML.
+   * A "mágica" está na definição do botão no XML:
+     * <button name="meu_metodo_python" type="object">: Isso informa ao Odoo para chamar o método Python chamado meu_metodo_python no modelo atual.
+     * <button name="meu_modulo.minha_acao_xml" type="action">: Isso informa ao Odoo para executar a Ação de Janela (Window Action) com o ID meu_modulo.minha_acao_xml.
+ * Fluxo do seu Caso:
+   * Tree View (Botão): O botão na tree view será type="object" e chamará um método (ex: action_open_request_wizard).
+   * Método action_open_request_wizard (Python): Este método não fará lógica, ele apenas retornará uma ação que diz ao Odoo "Abra este wizard em um pop-up".
+   * Wizard View (Botão "Confirmar"): O botão no rodapé do wizard será type="object" e chamará o método principal (ex: action_create_request).
+   * Método action_create_request (Python): Este método, dentro do modelo do wizard, lerá os dados do próprio wizard (usando self.observacao, etc.) e fará o self.env['resource.request'].create(...).
+🚀 Passo a Passo: Implementação Completa
+Aqui está um guia de como construir isso, assumindo que seu módulo se chama meu_modulo.
+1. Definir o Modelo de Destino (resource.request)
+Este é o modelo permanente que armazenará os dados.
+models/resource_request.py:
+from odoo import models, fields
+
+class ResourceRequest(models.Model):
+    _name = 'resource.request'
+    _description = 'Solicitação de Recurso'
+
+    # O Odoo geralmente precisa de um campo 'name'
+    name = fields.Char('Referência', required=True, copy=False, readonly=True, default='Novo') 
+    
+    # Os 3 campos que você mencionou
+    observacao = fields.Text('Observação')
+    pedido_id = fields.Many2one('sale.order', string='Pedido') # Ex: se for um Pedido de Venda
+    atribuido_id = fields.Many2one('res.partner', string='Atribuído a')
+
+    # Exemplo de como gerar uma sequência para o campo 'name'
+    @api.model
+    def create(self, vals):
+        if vals.get('name', 'Novo') == 'Novo':
+            vals['name'] = self.env['ir.sequence'].next_by_code('resource.request') or 'Novo'
+        return super(ResourceRequest, self).create(vals)
+
+2. Definir o Modelo do Wizard (resource.request.wizard)
+Este é o modelo TransientModel para o pop-up.
+wizard/resource_request_wizard.py:
+from odoo import models, fields, api
+
+class ResourceRequestWizard(models.TransientModel):
+    _name = 'resource.request.wizard'
+    _description = 'Wizard: Criar Solicitação de Recurso'
+
+    # Os 3 campos que você quer que apareçam no wizard
+    observacao = fields.Text('Observação')
+    pedido_id = fields.Many2one('sale.order', string='Pedido') 
+    atribuido_id = fields.Many2one('res.partner', string='Atribuído a')
+
+    """
+    PASSO 7: Este é o método auxiliar chamado pelo botão 'Confirmar' do wizard.
+    É aqui que a mágica de 'salvar no outro modelo' acontece.
+    """
+    def action_create_resource_request(self):
+        self.ensure_one() # Garante que estamos executando em um único registro do wizard
+        
+        RequestModel = self.env['resource.request']
+        
+        # Prepara o dicionário de valores para o novo registro
+        vals = {
+            'observacao': self.observacao,
+            'pedido_id': self.pedido_id.id,
+            'atribuido_id': self.atribuido_id.id,
+            # 'name' será preenchido pelo 'create' do 'resource.request'
+        }
+        
+        # Cria o registro no modelo 'resource.request'
+        new_request = RequestModel.create(vals)
+        
+        # (Opcional) Abrir o registro recém-criado
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Solicitação Criada',
+            'res_model': 'resource.request',
+            'res_id': new_request.id,
+            'view_mode': 'form',
+            'view_id': self.env.ref('meu_modulo.view_resource_request_form').id, # Crie esta view
+            'target': 'current', # 'current' fecha o wizard e abre o form
+        }
+
+3. Criar a View (Form) do Wizard (XML)
+Este é o layout do seu pop-up.
+wizard/resource_request_wizard_views.xml:
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="resource_request_wizard_form_view" model="ir.ui.view">
+        <field name="name">resource.request.wizard.form</field>
+        <field name="model">resource.request.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Criar Solicitação de Recurso">
+                <group>
+                    <field name="observacao"/>
+                    <field name="pedido_id"/>
+                    <field name="atribuido_id"/>
+                </group>
+                <footer>
+                    <button name="action_create_resource_request" string="Confirmar" type="object" class="btn-primary"/>
+                    
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_open_resource_request_wizard" model="ir.actions.act_window">
+        <field name="name">Criar Solicitação de Recurso</field>
+        <field name="res_model">resource.request.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field> <field name="view_id" ref="resource_request_wizard_form_view"/>
+    </record>
+</odoo>
+
+4. Adicionar o Botão (Control) na Tree View (XML)
+Agora, modificamos a tree view existente para adicionar o botão. Vou supor que você quer adicionar na tree view de Pedidos de Venda (sale.order) e quer usar o sale.order da linha para pré-preencher o wizard.
+views/sale_order_views.xml:
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sale_order_tree_inherit_resource_request" model="ir.ui.view">
+        <field name="name">sale.order.tree.inherit</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_tree"/>
+        <field name="arch" type="xml">
+            
+            <xpath expr="//field[@name='name']" position="after">
+                <button name="action_open_request_wizard" 
+                        type="object" 
+                        string="Criar Solicitação" 
+                        icon="fa-plus-square"/> 
+            </xpath>
+            
+        </field>
+    </record>
+</odoo>
+
+5. Criar o Método Python para Abrir o Wizard
+Este é o método action_open_request_wizard que o botão acima chama. Ele deve ser definido no modelo sale.order.
+models/sale_order.py:
+from odoo import models, fields, api
+
+class SaleOrder(models.Model):
+    _inherit = 'sale.order'
+
+    """
+    PASSO 6: Este é o método auxiliar chamado pelo botão na TREE VIEW.
+    Sua única função é retornar a ação que abre o wizard.
+    """
+    def action_open_request_wizard(self):
+        self.ensure_one() # Garante que foi clicado em uma única linha
+        
+        # --- Pré-preenchendo o Wizard ---
+        # Usamos 'context' para passar valores padrão para o wizard.
+        # As chaves devem ser 'default_NOME_DO_CAMPO'.
+        default_context = {
+            'default_pedido_id': self.id,
+            'default_atribuido_id': self.partner_id.id, # Ex: Pega o cliente do pedido
+        }
+
+        # Carrega a Ação XML que criamos no PASSO 3
+        action = self.env['ir.actions.act_window']._for_xml_id('meu_modulo.action_open_resource_request_wizard')
+        
+        # Adiciona o contexto com os valores padrão
+        action['context'] = default_context
+        
+        return action
+
+Resumo do Fluxo
+ * Usuário clica no botão "Criar Solicitação" na linha de um Pedido de Venda.
+ * O Odoo chama o método action_open_request_wizard (no sale.order).
+ * Este método retorna a ação action_open_resource_request_wizard, passando default_pedido_id e default_atribuido_id no contexto.
+ * O Odoo abre o wizard (resource.request.wizard) em um pop-up, e os campos "Pedido" e "Atribuído a" já vêm preenchidos.
+ * O usuário preenche a "Observação" e clica em "Confirmar".
+ * O Odoo chama o método action_create_resource_request (no resource.request.wizard).
+ * Este método lê os valores (self.observacao, self.pedido_id, etc.) e cria um novo registro em resource.request.
+ * O método retorna uma ação para fechar o pop-up e abrir o novo registro resource.request criado.
+Espero que este guia detalhado ajude a clarear o processo!
+Posso ajudar a detalhar alguma parte específica desse fluxo, como a criação das views ou o registro dos arquivos no __manifest__.py?
