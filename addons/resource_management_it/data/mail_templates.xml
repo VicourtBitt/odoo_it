@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- 1. Email ao Criar o Registro -->
+        <record id="email_template_it_registry_created" model="mail.template">
+            <field name="name">Recurso de TI: Novo Registro Criado</field>
+            <field name="model_id" ref="resource_management_it.model_it_resource_registry"/>
+            <field name="subject">Novo Recurso de TI Atribuído: ${object.name}</field>
+            <field name="auto_delete" eval="True"/>
+            <!-- 
+            CORREÇÃO: Linha removida.
+            Os destinatários serão fornecidos pelo Python (via email_values).
+            -->
+            <field name="body_html" type="html">
+                <div style="font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; font-size: 14px; color: #555;">
+                    <p>Olá,</p>
+                    <p>
+                        Um novo registro de recurso de TI foi criado e atribuído a 
+                        <strong>${object.assigned_to.name}</strong>.
+                    </p>
+                    <ul style="list-style-type: none; padding-left: 0;">
+                        <li><strong>Recurso:</strong> ${object.resource_item_id.name}</li>
+                        <li><strong>Atribuído a:</strong> ${object.assigned_to.name}</li>
+                        <li><strong>Data de Alocação:</strong> <t t-esc="format_datetime(object.allocation_date)"/></li>
+                        <li><strong>Criado por:</strong> ${object.create_uid.name}</li>
+                    </ul>
+                    <p>
+                        O funcionário deve agora assinar o termo de aceite no sistema.
+                    </p>
+                    <div style="margin-top: 20px;">
+                        <a t-attf-href="#{object.get_base_url()}/web#id=#{object.id}&amp;model=it.resource.registry&amp;view_type=form"
+                        style="background-color: #875A7B; color: #ffffff; padding: 10px 15px; text-decoration: none; border-radius: 5px;">
+                            Ver Registro
+                        </a>
+                    </div>
+                </div>
+            </field>
+        </record>
+
+        <!-- 2. Email ao Aceitar/Assinar (Ativo) -->
+        <record id="email_template_it_registry_accepted" model="mail.template">
+            <field name="name">Recurso de TI: Termo Aceito</field>
+            <field name="model_id" ref="resource_management_it.model_it_resource_registry"/>
+            <field name="subject">Termo de Recurso Aceito: ${object.name}</field>
+            <field name="auto_delete" eval="True"/>
+            <!-- CORREÇÃO: Linha removida. -->
+            <field name="report_template" ref="resource_management_it.action_report_it_resource_registry"/>
+            <field name="report_name">Termo_Aceite_${object.name}.pdf</field>
+            <field name="body_html" type="html">
+                <div style="font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; font-size: 14px; color: #555;">
+                    <p>Olá ${object.assigned_to.name},</p>
+                    <p>
+                        Seu aceite para o recurso <strong>${object.resource_item_id.name}</strong>
+                        foi registrado com sucesso em <t t-esc="format_datetime(datetime.datetime.now())"/>.
+                    </p>
+                    <p>
+                        Em anexo, você encontra o Termo de Responsabilidade assinado para seus registros.
+                    </p>
+                    <div style="margin-top: 20px;">
+                        <a t-attf-href="#{object.get_base_url()}/web#id=#{object.id}&amp;model=it.resource.registry&amp;view_type=form"
+                        style="background-color: #875A7B; color: #ffffff; padding: 10px 15px; text-decoration: none; border-radius: 5px;">
+                            Ver Registro
+                        </a>
+                    </div>
+                </div>
+            </field>
+        </record>
+
+        <!-- 3. Email ao Recusar (Rejeitado) -->
+        <record id="email_template_it_registry_rejected" model="mail.template">
+            <field name="name">Recurso de TI: Registro Recusado</field>
+            <field name="model_id" ref="resource_management_it.model_it_resource_registry"/>
+            <field name="subject">REGISTRO RECUSADO: ${object.name}</field>
+            <field name="auto_delete" eval="True"/>
+            <!-- CORREÇÃO: Linha removida. -->
+            <field name="body_html" type="html">
+                <div style="font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; font-size: 14px; color: #555;">
+                    <p>Atenção,</p>
+                    <p>
+                        O registro do recurso <strong>${object.resource_item_id.name}</strong>,
+                        atribuído a ${object.assigned_to.name}, foi marcado como 
+                        <strong style="color: #D9534F;">RECUSADO</strong>.
+                    </p>
+                    <p>
+                        Por favor, verifique o motivo no sistema e tome as ações necessárias.
+                    </p>
+                    <div style="margin-top: 20px;">
+                        <a t-attf-href="#{object.get_base_url()}/web#id=#{object.id}&amp;model=it.resource.registry&amp;view_type=form"
+                        style="background-color: #875A7B; color: #ffffff; padding: 10px 15px; text-decoration: none; border-radius: 5px;">
+                            Ver Registro
+                        </a>
+                    </div>
+                </div>
+            </field>
+        </record>
+
+        <!-- 4. Email ao Revogar (Revogado) -->
+        <record id="email_template_it_registry_revoked" model="mail.template">
+            <field name="name">Recurso de TI: Recurso Revogado</field>
+            <field name="model_id" ref="resource_management_it.model_it_resource_registry"/>
+            <field name="subject">RECURSO REVOGADO: ${object.name}</field>
+            <field name="auto_delete" eval="True"/>
+            <!-- CORREÇÃO: Linha removida. -->
+            <field name="report_template" ref="resource_management_it.action_report_it_resource_registry"/>
+            <field name="report_name">Termo_Revogacao_${object.name}.pdf</field>
+            <field name="body_html" type="html">
+                <div style="font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; font-size: 14px; color: #555;">
+                    <p>Olá ${object.assigned_to.name},</p>
+                    <p>
+                        Informamos que o seu acesso/posse ao recurso 
+                        <strong>${object.resource_item_id.name}</strong>
+                        foi <strong style="color: #D9534F;">REVOGADO</strong>.
+                    </p>
+                    <p>
+                        Em anexo, você encontra o Termo de Revogação. Por favor, proceda com a
+                        devolução do item ao departamento de TI o mais breve possível.
+                    </p>
+                    <div style="margin-top: 20px;">
+                        <a t-attf-href="#{object.get_base_url()}/web#id=#{object.id}&amp;model=it.resource.registry&amp;view_type=form"
+                        style="background-color: #875A7B; color: #ffffff; padding: 10px 15px; text-decoration: none; border-radius: 5px;">
+                            Ver Registro
+                        </a>
+                    </div>
+                </div>
+            </field>
+        </record>
+
+    </data>
+</odoo>

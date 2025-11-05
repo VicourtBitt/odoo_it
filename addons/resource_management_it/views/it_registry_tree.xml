@@ -30,17 +30,30 @@
         <field name="arch" type="xml">
             <form string="Registro de Solicitação de Equipamento">
                 <sheet>
-                    <group string="Funcionário e Recurso">
-                        <field name="name"/>
-                        <field name="resource_item_id"/>
-                        <field name="assigned_to"/>
+                    <header>
+                        <field name="status" widget="statusbar"/>
+                    </header>
+                    <group col="2">
+                        <group string="Funcionário e Recurso">
+                            <field name="name"/>
+                            <field name="resource_item_id"/>
+                            <field name="assigned_to"/>
+                        </group>
+                        <group string="Detalhes da Solicitação">
+                            <field name="allocation_date"/>
+                            <field name="return_date"/>
+                        </group>
                     </group>
-                    <group string="Detalhes da Solicitação">
-                        <field name="status"/>
-                        <field name="allocation_date"/>
-                        <field name="return_date"/>
+                    <group col="2">
+                        <group>
+                            <field name="employee_signature" widget="signature"/>
+                        </group>
                     </group>
                 </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
             </form>
         </field>
     </record>

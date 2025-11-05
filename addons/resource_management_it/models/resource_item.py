@@ -7,7 +7,7 @@ class ItResourceItem(models.Model):
     name = fields.Char(string='Nome do Recurso', required=True)
     description = fields.Text(string='Descrição')
     category = fields.Char(string='Categoria')
-    revision_frequency = fields.Integer(string='Frequência de Revisão (dias)')
+    revision_frequency = fields.Selection([('daily', 'Diário'), ('weekly', 'Semanal'), ('monthly', 'Mensal'), ('yearly', 'Anual')], string='Frequência de Revisão')
     registry_ids = fields.One2many('it.resource.registry', 'resource_item_id', string='Histórico de Alocações')
     previous_assignees = fields.Many2many('hr.employee', compute='_compute_previous_assignees', string='Usuários Anteriores')
     

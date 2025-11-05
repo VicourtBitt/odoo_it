@@ -19,4 +19,12 @@
             action="it_resource_item_tree_action" 
             sequence="20"
         />
+
+        <menuitem 
+            id="it_resource_request_menu" 
+            name="Solicitações" 
+            parent="it_management_menu" 
+            action="it_resource_request_action" 
+            sequence="30"
+        />
 </odoo>

@@ -1,2 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_it_resource_request_user,it.resource.request user,model_it_resource_request,base.group_user,1,1,1,
 access_registry_it_user,it.resource.registry user,model_it_resource_registry,base.group_user,1,1,1,1
+access_it_resource_item_user,it.resource.item user,model_it_resource_item,base.group_user,1,1,1,1

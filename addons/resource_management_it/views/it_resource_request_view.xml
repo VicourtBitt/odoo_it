@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- 1. View de Formulário (Form) -->
+        <record id="it_resource_request_form_view" model="ir.ui.view">
+            <field name="name">it.resource.request.form</field>
+            <field name="model">it.resource.request</field>
+            <field name="arch" type="xml">
+                <form string="Solicitação de Recurso de TI">
+                    <header>
+                        <!-- 
+                            Botões de Ação. Você precisará criar essas funções
+                            no seu arquivo .py (ex: def action_approve(self): ...)
+                        -->
+                        <button name="action_approve" type="object" string="Aprovar"
+                            class="oe_highlight"
+                            attrs="{'invisible': [('state', '!=', 'to_approve')]}"/>
+                        <button name="action_complete" type="object" string="Concluir"
+                            class="oe_highlight"
+                            attrs="{'invisible': [('state', '!=', 'approved')]}"/>
+                        <button name="action_cancel" type="object" string="Cancelar"
+                            attrs="{'invisible': [('state', 'in', ['done', 'cancelled'])]}"/>
+                        
+                        <!-- Widget de Status (Barra de Status) -->
+                        <field name="state" widget="statusbar" statusbar_visible="to_approve,approved,done"/>
+                    </header>
+                    <group col="2">
+                         <sheet>
+                            <div class="oe_title">
+                                <label for="name"/>
+                                <h1>
+                                    <field name="name" placeholder="Ex: Solicitação de novo notebook para dev..."/>
+                                </h1>
+                            </div>
+                            <group>
+                                <group string="Detalhes da Solicitação">
+                                    <!-- 
+                                        O 'default_requester_id' pode ser definido na ação
+                                        ou no create() do Python.
+                                    -->
+                                    <field name="requester_id"/>
+                                    <field name="designed_employee_id"
+                                        domain="[('id', '!=', requester_id)]"/>
+                                    <field name="request_date" readonly="1"/>
+                                </group>
+                                <group string="Aprovação">
+                                    <!-- 
+                                        Corrigi o seu domain que tinha um erro ('sel_g').
+                                        Você deve corrigir isso no modelo .py também.
+                                    -->
+                                    <field name="need_approval_of"
+                                        domain="[('id', '!=', requester_id), ('id', '!=', designed_employee_id)]"/>
+                                    <!-- Campos de aprovação devem ser readonly,
+                                        controlados pelos botões -->
+                                    <field name="has_approval" readonly="1"/>
+                                    <field name="approval_date" readonly="1"
+                                        attrs="{'invisible': [('has_approval', '=', False)]}"/>
+                                </group>
+                            </group>
+                            <notebook>
+                                <page string="Descrição Detalhada">
+                                    <field name="description" placeholder="Detalhe a necessidade, justificativa, especificações do recurso, etc..."/>
+                                </page>
+                            </notebook>
+                        </sheet>
+                        <!-- Adiciona o chatter (log de notas e seguidores) -->
+                        <div class="oe_chatter">
+                            <field name="message_follower_ids" widget="mail_followers"/>
+                            <field name="message_ids" widget="mail_thread"/>
+                        </div>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- 2. View de Árvore (Tree) -->
+        <record id="it_resource_request_tree_view" model="ir.ui.view">
+            <field name="name">it.resource.request.tree</field>
+            <field name="model">it.resource.request</field>
+            <field name="arch" type="xml">
+                <tree string="Solicitações de Recursos de TI">
+                    <field name="name"/>
+                    <field name="requester_id"/>
+                    <field name="designed_employee_id"/>
+                    <field name="request_date"/>
+                    <field name="need_approval_of"/>
+                    <!-- 
+                        Widget 'badge' para colorir o status na lista.
+                        As cores são baseadas nas classes do Bootstrap.
+                    -->
+                    <field name="state" widget="badge"
+                        decoration-info="state == 'to_approve'"
+                        decoration-warning="state == 'approved'"
+                        decoration-success="state == 'done'"
+                        decoration-danger="state == 'cancelled'"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- 3. Ação de Janela (Action) -->
+        <record id="it_resource_request_action" model="ir.actions.act_window">
+            <field name="name">Solicitações de Recursos de TI</field>
+            <field name="res_model">it.resource.request</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Nenhuma solicitação de recurso encontrada.
+                </p><p>
+                    Clique em "Criar" para iniciar uma nova solicitação.
+                </p>
+            </field>
+        </record>
+
+        <!-- 4. Item de Menu -->
+        <!-- 
+            Estou assumindo que você tem um menu pai com o ID
+            'seu_modulo.it_management_menu' (baseado na sua pergunta anterior).
+            Ajuste o 'parent' se necessário.
+        -->
+    </data>
+</odoo>

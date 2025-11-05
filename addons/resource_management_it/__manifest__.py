@@ -8,13 +8,16 @@
     "author": "Victor Bittencourt",
     "license": "AGPL-3",
     "summary": "Faça a gestão de ativos que foram alocados e os seus respectivos alocantes.",
-    "depends": ["base", "hr"],
+    "depends": ["base", "hr", 'mail'],
     "data": [
         "security/ir.model.access.csv",
         "views/it_registry_tree.xml",
         "views/it_resource_item_tree.xml",
         "views/it_employee_view.xml",
+        "views/it_resource_request_view.xml",
         "views/it_management_menu.xml",
+        'report/it_resource_report.xml',  # O relatório deve vir antes do template
+        'data/mail_templates.xml',        # Templates de email
     ],
     "demo": [
     ],

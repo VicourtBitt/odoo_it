@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- 1. Definição da Ação do Relatório -->
+        <record id="action_report_it_resource_registry" model="ir.actions.report">
+            <field name="name">Termo de Recurso de TI</field>
+            <field name="model">it.resource.registry</field>
+            <field name="report_type">qweb-pdf</field>
+            <!-- O nome do template QWeb que será chamado -->
+            <field name="report_name">resource_management_it.report_it_resource_registry_template</field>
+            <field name="report_file">resource_management_it.report_it_resource_registry_template</field>
+            <field name="print_report_name">'Termo - %s' % (object.name)</field>
+            <field name="binding_model_id" ref="model_it_resource_registry"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <!-- 2. Template QWeb do Relatório -->
+        <template id="report_it_resource_registry_template">
+            <!-- Usamos 'web.html_container' para ter o PDF -->
+            <t t-call="web.html_container">
+                <!-- 'docs' é o conjunto de registros (pode ser mais de um) -->
+                <t t-foreach="docs" t-as="doc">
+                    <!-- 'web.external_layout' adiciona o cabeçalho e rodapé padrão da empresa -->
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <div class="oe_structure"/>
+                            
+                            <!-- Título dinâmico com base no status -->
+                            <h1 class="text-center mt-5">
+                                <t t-if="doc.status == 'active'">
+                                    Termo de Responsabilidade e Aceite
+                                </t>
+                                <t t-elif="doc.status == 'revoked'">
+                                    Termo de Revogação de Recurso
+                                </t>
+                                <t t-else="">
+                                    Documento de Recurso de TI
+                                </t>
+                            </h1>
+                            
+                            <table class="table table-sm table-bordered mt-4">
+                                <tr>
+                                    <th style="width: 25%;">Funcionário:</th>
+                                    <td><span t-field="doc.assigned_to.name"/></td>
+                                </tr>
+                                <tr>
+                                    <th>Cargo:</th>
+                                    <td><span t-field="doc.assigned_to.job_title"/></td>
+                                </tr>
+                                <tr>
+                                    <th>Recurso:</th>
+                                    <td><span t-field="doc.resource_item_id.name"/></td>
+                                </tr>
+                                <tr>
+                                    <th>Data de Alocação:</th>
+                                    <td><span t-field="doc.allocation_date" t-options="{'widget': 'datetime'}"/></td>
+                                </tr>
+                                <tr>
+                                    <th>Status Atual:</th>
+                                    <td><strong t-field="doc.status"/></td>
+                                </tr>
+                            </table>
+
+                            <div class="mt-5">
+                                <!-- Texto dinâmico com base no status -->
+                                <t t-if="doc.status == 'active'">
+                                    <p>
+                                        Eu, <span t-field="doc.assigned_to.name"/>, portador do CPF 
+                                        <span t-field="doc.assigned_to.identification_id"/>,
+                                        declaro que recebi o equipamento acima descrito, 
+                                        em perfeitas condições de uso, e comprometo-me a
+                                        utilizá-lo exclusivamente para fins profissionais,
+                                        zelando pela sua integridade e bom funcionamento.
+                                    </p>
+                                    <p>
+                                        Estou ciente de que sou responsável por qualquer dano
+                                        causado por mau uso, negligência ou perda.
+                                    </p>
+                                </t>
+                                <t t-elif="doc.status == 'revoked'">
+                                    <p>
+                                        Fica registrado por meio deste termo a 
+                                        <strong>REVOGAÇÃO</strong> do uso do equipamento
+                                        acima descrito pelo funcionário 
+                                        <span t-field="doc.assigned_to.name"/>.
+                                    </p>
+                                    <p>
+                                        O funcionário deve devolver o item ao departamento 
+                                        de TI imediatamente, nas mesmas condições em que
+                                        foi recebido, ressalvado o desgaste natural.
+                                    </p>
+                                </t>
+                            </div>
+                            
+                            <!-- Seção da Assinatura (só mostra se estiver ativo e assinado) -->
+                            <div t-if="doc.status == 'active' and doc.employee_signature" 
+                                 class="text-center" style="margin-top: 80px;">
+                                
+                                <img t-attf-src="data:image/png;base64,#{doc.employee_signature}" 
+                                     style="max-height: 120px; border-bottom: 1px solid #000;"/>
+                                
+                                <p style="margin-top: 5px;">
+                                    __________________________________________________<br/>
+                                    <strong><span t-field="doc.assigned_to.name"/></strong><br/>
+                                    <em>Assinado digitalmente em: 
+                                        <span t-field="doc.write_date" t-options="{'widget': 'datetime'}"/>
+                                    </em>
+                                </p>
+                            </div>
+
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>
