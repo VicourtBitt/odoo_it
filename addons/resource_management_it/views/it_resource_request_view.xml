@@ -110,12 +110,5 @@
                 </p>
             </field>
         </record>
-
-        <!-- 4. Item de Menu -->
-        <!-- 
-            Estou assumindo que você tem um menu pai com o ID
-            'seu_modulo.it_management_menu' (baseado na sua pergunta anterior).
-            Ajuste o 'parent' se necessário.
-        -->
     </data>
 </odoo>
